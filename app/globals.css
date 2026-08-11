@@ -1,26 +1,156 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base surfaces — ニュートラルダーク基調（真っ黒は避ける） */
+  --background: #131315;
+  --surface: #1b1b1e;
+  --surface-hover: #232327;
+  --border: #2b2b2f;
+
+  /* Text */
+  --foreground: #f4f4f5;
+  --muted: #9f9fa6;
+
+  /* Accent — 控えめなウォームサンド。作品スクリーンショットを邪魔しない程度に使用 */
+  --accent: #d9a566;
+  --accent-foreground: #131315;
+
+  --radius-card: 0.75rem;
+
+  /* 上質な減速カーブ：最初に素早く動いて最後にゆっくり止まる */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --radius-card: var(--radius-card);
+  --ease-premium: var(--ease-premium);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* カード／ブラウザフレームの奥行き表現用シャドウ（近接の薄い影 + 遠く広がる淡い影） */
+@utility shadow-frame {
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.35),
+    0 16px 32px -14px rgb(0 0 0 / 0.5);
+}
+
+@utility shadow-card {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+}
+
+@utility shadow-card-hover {
+  box-shadow:
+    0 2px 4px 0 rgb(0 0 0 / 0.25),
+    0 22px 40px -16px rgb(0 0 0 / 0.5);
+}
+
+/* ヘッダー（ファーストビュー）の走査演出。JSでの毎フレーム計算を避けるため CSS animation のみで実装 */
+@keyframes header-grid-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
+@keyframes header-scan {
+  0% {
+    top: 0%;
+    opacity: 1;
+  }
+  82% {
+    top: calc(100% - 2px);
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% - 2px);
+    opacity: 0;
+  }
+}
+
+@keyframes header-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0% 0);
+  }
+}
+
+.header-grid {
+  /* --foreground (#f4f4f5) を約4%の極薄ラインとして使用。ヘッダー領域内のみに敷く */
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      rgb(244 244 245 / 0.04) 0 1px,
+      transparent 1px 32px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgb(244 244 245 / 0.04) 0 1px,
+      transparent 1px 32px
+    );
+  opacity: 0;
+  animation: header-grid-in 1200ms var(--ease-premium) forwards;
+}
+
+.header-scan-line {
+  /* 中央が明るく両端が透明なアクセント色のライン + 上下への淡いグロー */
+  background: linear-gradient(to right, transparent, var(--accent) 50%, transparent);
+  box-shadow:
+    0 -6px 14px -4px rgb(217 165 102 / 0.55),
+    0 6px 14px -4px rgb(217 165 102 / 0.55);
+  animation: header-scan 1200ms var(--ease-premium) forwards;
+}
+
+.header-reveal {
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+  animation: header-reveal 700ms var(--ease-premium) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-grid {
+    opacity: 1;
+    animation: none;
+  }
+
+  .header-scan-line {
+    animation: none;
+    opacity: 0;
+  }
+
+  .header-reveal {
+    animation: none;
+    opacity: 1;
+    clip-path: none;
+  }
+}
+
+html {
+  color-scheme: dark;
+}
+
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* 極めて淡い光だまりを2つ重ねて、単色よりわずかに奥行きを持たせる */
+  background:
+    radial-gradient(1200px circle at 12% -10%, rgb(217 165 102 / 0.06), transparent 60%),
+    radial-gradient(1000px circle at 88% 8%, rgb(255 255 255 / 0.035), transparent 55%),
+    var(--background);
+  background-attachment: fixed;
 }
