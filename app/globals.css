@@ -91,6 +91,17 @@
   }
 }
 
+/* 走査線がテキストを通過する瞬間のわずかな明るさの反応。0.15秒で戻る */
+@keyframes header-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  40% {
+    filter: brightness(1.35);
+  }
+}
+
 .header-grid {
   /* --foreground (#f4f4f5) を約4%の極薄ラインとして使用。ヘッダー領域内のみに敷く */
   background-image:
@@ -123,6 +134,10 @@
   animation: header-reveal 700ms var(--ease-premium) forwards;
 }
 
+.header-pulse {
+  animation: header-pulse 150ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .header-grid {
     opacity: 1;
@@ -138,6 +153,10 @@
     animation: none;
     opacity: 1;
     clip-path: none;
+  }
+
+  .header-pulse {
+    animation: none;
   }
 }
 
