@@ -40,7 +40,12 @@ export function Header() {
             className="header-grid pointer-events-none absolute inset-0"
           />
           <div
-            key={scanKey}
+            key={`grid-glow-${scanKey}`}
+            aria-hidden="true"
+            className="header-grid-glow pointer-events-none absolute inset-0"
+          />
+          <div
+            key={`scan-line-${scanKey}`}
             aria-hidden="true"
             className="header-scan-line pointer-events-none absolute inset-x-0 top-0 h-0.5"
           />

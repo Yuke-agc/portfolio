@@ -1,6 +1,7 @@
 import { works } from "@/lib/constants/works";
 import { WorkCard } from "./WorkCard";
 import { FadeIn } from "./FadeIn";
+import { ScanReveal } from "./ScanReveal";
 
 const SECTION_STAGGER_MS = 80;
 const CARD_STAGGER_MS = 120;
@@ -17,13 +18,13 @@ export function WorkList() {
       </FadeIn>
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         {works.map((work, index) => (
-          <FadeIn
+          <ScanReveal
             key={work.slug}
             delayMs={CARDS_BASE_DELAY_MS + index * CARD_STAGGER_MS}
             className="h-full"
           >
             <WorkCard work={work} />
-          </FadeIn>
+          </ScanReveal>
         ))}
       </div>
     </section>

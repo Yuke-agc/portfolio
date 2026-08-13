@@ -80,6 +80,23 @@
   }
 }
 
+/* header-scan と同じ速度・イージングで、明るいグリッド層を帯状にマスクして走らせる。
+   個別マスではなく mask-image のみで実現し、DOM要素を増やさない */
+@keyframes header-grid-glow-sweep {
+  0% {
+    mask-position: 0% -30%;
+    -webkit-mask-position: 0% -30%;
+  }
+  82% {
+    mask-position: 0% 130%;
+    -webkit-mask-position: 0% 130%;
+  }
+  100% {
+    mask-position: 0% 130%;
+    -webkit-mask-position: 0% 130%;
+  }
+}
+
 @keyframes header-reveal {
   from {
     opacity: 0;
@@ -128,6 +145,29 @@
   animation: header-scan 1200ms var(--ease-premium) forwards;
 }
 
+.header-grid-glow {
+  /* .header-grid と同じ格子を、アクセント色寄りの明るい色で重ねて敷き、
+     帯状の mask で走査線が通過した部分だけを見せる */
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      rgb(217 165 102 / 0.55) 0 1px,
+      transparent 1px 32px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgb(217 165 102 / 0.55) 0 1px,
+      transparent 1px 32px
+    );
+  mask-image: linear-gradient(to bottom, transparent, black, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black, transparent);
+  mask-size: 100% 30%;
+  -webkit-mask-size: 100% 30%;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  animation: header-grid-glow-sweep 1200ms var(--ease-premium) forwards;
+}
+
 .header-reveal {
   opacity: 0;
   clip-path: inset(0 0 100% 0);
@@ -149,6 +189,11 @@
     opacity: 0;
   }
 
+  .header-grid-glow {
+    animation: none;
+    opacity: 0;
+  }
+
   .header-reveal {
     animation: none;
     opacity: 1;
@@ -157,6 +202,66 @@
 
   .header-pulse {
     animation: none;
+  }
+}
+
+/* 作品カードの走査出現演出。カードが画面内に入ったら、縦線が左から右へ
+   横切りながら clip-path で内容を開く。一度開いたら閉じない（useInView は
+   一度 true になったら固定のため、CSS 側もそれに合わせて一方向のみ） */
+@keyframes scan-reveal-content-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes scan-reveal-line-sweep {
+  0% {
+    left: 0%;
+    opacity: 1;
+  }
+  85% {
+    left: 100%;
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.scan-reveal-content {
+  clip-path: inset(0 100% 0 0);
+}
+
+.scan-reveal-content--in {
+  animation: scan-reveal-content-in 500ms var(--ease-premium) forwards;
+}
+
+.scan-reveal-line {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--accent) 50%, transparent);
+  box-shadow:
+    -6px 0 14px -4px rgb(217 165 102 / 0.55),
+    6px 0 14px -4px rgb(217 165 102 / 0.55);
+  pointer-events: none;
+  animation: scan-reveal-line-sweep 500ms var(--ease-premium) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-reveal-content,
+  .scan-reveal-content--in {
+    animation: none;
+    clip-path: none;
+  }
+
+  .scan-reveal-line {
+    display: none;
   }
 }
 
