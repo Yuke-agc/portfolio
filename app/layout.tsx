@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { profile } from "@/lib/constants/profile";
+import { INTRO_STORAGE_KEY } from "@/lib/constants/intro";
+import { IntroOverlay } from "@/components/IntroOverlay";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -35,14 +37,24 @@ export const metadata: Metadata = {
   },
 };
 
+// イントロ表示済みなら、React のハイドレーション前に <html> へ data-intro-skip="1" を
+// 付与する。ブロッキング実行されるため、sessionStorage の読み取りと属性付与のみに留める。
+const introSkipCheckScript = `(function(){try{if(sessionStorage.getItem("${INTRO_STORAGE_KEY}")==="1"){document.documentElement.setAttribute("data-intro-skip","1")}}catch(e){}})()`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: introSkipCheckScript }}
+        />
+      </head>
       <body className="flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
-        {children}
+        <IntroOverlay>{children}</IntroOverlay>
       </body>
     </html>
   );
