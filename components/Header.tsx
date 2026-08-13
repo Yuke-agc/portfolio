@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { profile } from "@/lib/constants/profile";
+import { socialLinks } from "@/lib/constants/socialLinks";
 import { useScanReplay } from "@/lib/hooks/useScanReplay";
 import { useIntroDone, useIntroLogoSlot } from "@/lib/intro-context";
 
@@ -109,6 +110,29 @@ export function Header() {
           >
             {profile.tagline}
           </p>
+        </div>
+        <div
+          className={
+            introDone
+              ? "header-reveal mt-4 [animation-delay:1000ms]"
+              : "mt-4 opacity-0"
+          }
+        >
+          <ul className="flex flex-wrap gap-2">
+            {socialLinks.map(({ name, url, icon: Icon }) => (
+              <li key={name}>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={name}
+                  className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-border text-muted transition-colors duration-200 ease-premium hover:border-accent/40 hover:text-accent"
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </header>
