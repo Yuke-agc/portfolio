@@ -97,28 +97,6 @@
   }
 }
 
-@keyframes header-reveal {
-  from {
-    opacity: 0;
-    clip-path: inset(0 0 100% 0);
-  }
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0% 0);
-  }
-}
-
-/* 走査線がテキストを通過する瞬間のわずかな明るさの反応。0.15秒で戻る */
-@keyframes header-pulse {
-  0%,
-  100% {
-    filter: brightness(1);
-  }
-  40% {
-    filter: brightness(1.35);
-  }
-}
-
 .header-grid {
   /* --foreground (#f4f4f5) を約4%の極薄ラインとして使用。ヘッダー領域内のみに敷く */
   background-image:
@@ -133,7 +111,7 @@
       transparent 1px 32px
     );
   opacity: 0;
-  animation: header-grid-in 1200ms var(--ease-premium) forwards;
+  animation: header-grid-in 500ms var(--ease-premium) forwards;
 }
 
 .header-scan-line {
@@ -168,16 +146,6 @@
   animation: header-grid-glow-sweep 1200ms var(--ease-premium) forwards;
 }
 
-.header-reveal {
-  opacity: 0;
-  clip-path: inset(0 0 100% 0);
-  animation: header-reveal 700ms var(--ease-premium) forwards;
-}
-
-.header-pulse {
-  animation: header-pulse 150ms ease-out;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .header-grid {
     opacity: 1;
@@ -193,15 +161,114 @@
     animation: none;
     opacity: 0;
   }
+}
 
-  .header-reveal {
-    animation: none;
+/* Hero: 汎用のフェードアップ演出。要素ごとに --hero-fade-distance / --hero-fade-duration を
+   inline styleで指定し、animation-delayで段階的に現す */
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(var(--hero-fade-distance, 8px));
+  }
+  to {
     opacity: 1;
-    clip-path: none;
+    transform: translateY(0);
+  }
+}
+
+.hero-fade-up {
+  opacity: 0;
+  transform: translateY(var(--hero-fade-distance, 8px));
+}
+
+.hero-fade-up--in {
+  animation: hero-fade-up var(--hero-fade-duration, 450ms) var(--ease-premium)
+    forwards;
+}
+
+/* Hero: H1は横方向にクリップを開きながら、ごくわずかに右へ動いて現れる */
+@keyframes hero-h1-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+    transform: translateX(-4px);
+  }
+  to {
+    clip-path: inset(0 0% 0 0);
+    transform: translateX(0);
+  }
+}
+
+.hero-h1-reveal {
+  clip-path: inset(0 100% 0 0);
+  transform: translateX(-4px);
+}
+
+.hero-h1-reveal--in {
+  animation: hero-h1-in 650ms var(--ease-premium) forwards;
+}
+
+/* Hero: スクロール誘導の縦線が上から下へ伸びる */
+@keyframes hero-scroll-line-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.hero-scroll-line {
+  transform-origin: top;
+  transform: scaleY(0);
+}
+
+.hero-scroll-line--in {
+  animation: hero-scroll-line-grow 500ms var(--ease-premium) forwards;
+}
+
+/* Hero: ポインター追従のごく淡いグロー。(hover: hover) and (pointer: fine) の環境のみ有効 */
+.hero-pointer-glow {
+  opacity: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-pointer-glow {
+    background: radial-gradient(
+      380px circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+      rgb(198 164 109 / 0.1),
+      transparent 70%
+    );
+    transition: opacity 300ms var(--ease-premium);
   }
 
-  .header-pulse {
+  .hero-pointer-glow--active {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-fade-up,
+  .hero-fade-up--in {
+    opacity: 1;
+    transform: none;
     animation: none;
+  }
+
+  .hero-h1-reveal,
+  .hero-h1-reveal--in {
+    clip-path: none;
+    transform: none;
+    animation: none;
+  }
+
+  .hero-scroll-line,
+  .hero-scroll-line--in {
+    transform: none;
+    animation: none;
+  }
+
+  .hero-pointer-glow {
+    display: none;
   }
 }
 
@@ -470,6 +537,26 @@ html[data-intro-skip="1"] .intro-flight * {
 
 html[data-intro-skip="1"] .header-logo {
   opacity: 1;
+}
+
+html[data-intro-skip="1"] .hero-fade-up,
+html[data-intro-skip="1"] .hero-fade-up--in {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+html[data-intro-skip="1"] .hero-h1-reveal,
+html[data-intro-skip="1"] .hero-h1-reveal--in {
+  clip-path: none;
+  transform: none;
+  animation: none;
+}
+
+html[data-intro-skip="1"] .hero-scroll-line,
+html[data-intro-skip="1"] .hero-scroll-line--in {
+  transform: none;
+  animation: none;
 }
 
 html {

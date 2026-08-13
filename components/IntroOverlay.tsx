@@ -28,7 +28,7 @@ type IntroOverlayProps = {
  * マウント後に sessionStorage / prefers-reduced-motion を見て即座にスキップするか判定する。
  * 本編のコンテンツ（children）は常にオーバーレイの下に DOM として存在させる。
  *
- * キューブは展開後、ヘッダーのロゴ位置（Header 側から渡される logoSlotRef）へ
+ * キューブは展開後、Heroのロゴ位置（Hero 側から渡される logoSlotRef）へ
  * FLIP 方式（left/top ではなく transform の translate+scale）で飛行して着地する。
  * 飛行レイヤーはワイプでクリップされる背景幕とは別の独立した fixed レイヤーにし、
  * ワイプの進行中もキューブ自身は見え続けるようにしている。
@@ -146,6 +146,14 @@ export function IntroOverlay({ children }: IntroOverlayProps) {
 
   return (
     <IntroContext.Provider value={contextValue}>
+      {/* JS無効時は introDone が永久に false のままになり、オーバーレイが
+          ページ全体を覆い続けてしまう。noscript で確実に非表示にする */}
+      <noscript
+        dangerouslySetInnerHTML={{
+          __html:
+            "<style>.intro-overlay,.intro-flight{display:none !important}</style>",
+        }}
+      />
       {!introDone && (
         <>
           {/* ワイプでクリップされる背景幕。走査線もこの中で一緒にワイプされる */}

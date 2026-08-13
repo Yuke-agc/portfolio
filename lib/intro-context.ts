@@ -6,15 +6,15 @@ type IntroContextValue = {
   /** イントロ演出が完了したかどうか */
   introDone: boolean;
   /**
-   * ヘッダー側のロゴ領域への ref。イントロのキューブが着地先の座標を
-   * getBoundingClientRect() で測るために Header から渡される
+   * Hero側のロゴ領域への ref。イントロのキューブが着地先の座標を
+   * getBoundingClientRect() で測るために Hero から渡される
    */
   logoSlotRef: RefObject<HTMLDivElement | null> | null;
 };
 
 /**
  * Provider がない場合は introDone: true（イントロなしとして扱い、
- * Header 等のアニメーションを即座に開始する）
+ * Hero 等のアニメーションを即座に開始する）
  */
 export const IntroContext = createContext<IntroContextValue>({
   introDone: true,
