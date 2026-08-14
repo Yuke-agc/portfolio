@@ -6,6 +6,7 @@ import { profile } from "@/lib/constants/profile";
 import { socialLinks } from "@/lib/constants/socialLinks";
 import { useScanReplay } from "@/lib/hooks/useScanReplay";
 import { useIntroDone, useIntroLogoSlot } from "@/lib/intro-context";
+import { MailtoLink } from "./MailtoLink";
 
 type FadeUpOptions = {
   /** translateY の開始距離(px) */
@@ -208,8 +209,10 @@ export function Hero() {
                 aria-hidden="true"
               />
             </a>
-            <a
-              href={`mailto:${profile.contactEmail}`}
+            <MailtoLink
+              user={profile.contactEmailUser}
+              domain={profile.contactEmailDomain}
+              ariaLabel="メールで連絡する"
               className="group inline-flex min-h-11 w-fit items-center text-sm font-medium text-muted transition-colors duration-200 ease-premium hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <span className="relative">
@@ -219,7 +222,7 @@ export function Hero() {
                   className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-current transition-transform duration-200 ease-premium group-hover:scale-x-100"
                 />
               </span>
-            </a>
+            </MailtoLink>
           </div>
 
           <ul className="mt-6 flex flex-wrap gap-2">

@@ -8,8 +8,12 @@ export type Profile = {
   valueProposition: string;
   /** 現在取り組んでいるプロジェクト名（「Now building: 」に続けて表示） */
   nowBuilding: string;
-  /** 補助CTA（mailto）の送信先 */
-  contactEmail: string;
+  /**
+   * 補助CTA（mailto）の送信先。bot収集対策のため @ の前後で分割して保持し、
+   * クライアント側JSで組み立てる（MailtoLink参照）
+   */
+  contactEmailUser: string;
+  contactEmailDomain: string;
 };
 
 export const profile: Profile = {
@@ -19,6 +23,6 @@ export const profile: Profile = {
   valueProposition:
     "余計なノイズを減らし、人の言葉が残るWebサービスを設計・実装しています。",
   nowBuilding: "YOHAKU",
-  // TODO: 実際の連絡先メールアドレスに差し替える
-  contactEmail: "your-email@example.com",
+  contactEmailUser: "yuke.agc",
+  contactEmailDomain: "gmail.com",
 };
