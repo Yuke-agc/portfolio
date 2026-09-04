@@ -5,7 +5,6 @@ import { ArrowRight } from "lucide-react";
 import { profile } from "@/lib/constants/profile";
 import { socialLinks } from "@/lib/constants/socialLinks";
 import { useScanReplay } from "@/lib/hooks/useScanReplay";
-import { useIntroDone, useIntroLogoSlot } from "@/lib/intro-context";
 import { MailtoLink } from "./MailtoLink";
 
 type FadeUpOptions = {
@@ -13,17 +12,12 @@ type FadeUpOptions = {
   distance: number;
   /** アニメーション時間(ms) */
   duration: number;
-  /** イントロ終了からの遅延(ms) */
+  /** マウントからの遅延(ms) */
   delayMs: number;
 };
 
 export function Hero() {
   const { ref: heroRef, scanKey } = useScanReplay();
-  // イントロ演出がある場合、Hero自身の走査線・コンテンツのアニメーションは
-  // イントロ終了と同時に開始させる（イントロがない場合は true で即座に開始）
-  const introDone = useIntroDone();
-  // イントロのキューブが着地先として座標を測るためのロゴ領域
-  const logoSlotRef = useIntroLogoSlot();
   const [pointerActive, setPointerActive] = useState(false);
 
   // ポインター追従グロー。(hover: hover) and (pointer: fine) の環境でのみ有効にし、
@@ -75,7 +69,7 @@ export function Hero() {
   }, [heroRef]);
 
   const fadeUpClass = (extra?: string) =>
-    ["hero-fade-up", introDone ? "hero-fade-up--in" : "", extra ?? ""]
+    ["hero-fade-up", "hero-fade-up--in", extra ?? ""]
       .filter(Boolean)
       .join(" ");
 
@@ -87,7 +81,7 @@ export function Hero() {
     ({
       "--hero-fade-distance": `${distance}px`,
       "--hero-fade-duration": `${duration}ms`,
-      animationDelay: introDone ? `${delayMs}ms` : undefined,
+      animationDelay: `${delayMs}ms`,
     }) as CSSProperties;
 
   return (
@@ -95,32 +89,20 @@ export function Hero() {
       ref={heroRef}
       className="relative flex min-h-[100svh] flex-col overflow-hidden px-5 sm:px-8 lg:min-h-[88vh] lg:px-12"
     >
-      {/* JS無効時は introDone が永久に false のままになり、名前・本文・CTAが
-          opacity: 0 / clip-path で隠れたままになってしまう。noscript で強制的に表示する */}
-      <noscript
-        dangerouslySetInnerHTML={{
-          __html:
-            "<style>.hero-fade-up,.hero-h1-reveal,.hero-scroll-line,.header-logo{opacity:1 !important;clip-path:none !important;transform:none !important;animation:none !important}</style>",
-        }}
+      <div
+        aria-hidden="true"
+        className="header-grid pointer-events-none absolute inset-0"
       />
-      {introDone && (
-        <>
-          <div
-            aria-hidden="true"
-            className="header-grid pointer-events-none absolute inset-0"
-          />
-          <div
-            key={`grid-glow-${scanKey}`}
-            aria-hidden="true"
-            className="header-grid-glow pointer-events-none absolute inset-0"
-          />
-          <div
-            key={`scan-line-${scanKey}`}
-            aria-hidden="true"
-            className="header-scan-line pointer-events-none absolute inset-x-0 top-0 h-0.5"
-          />
-        </>
-      )}
+      <div
+        key={`grid-glow-${scanKey}`}
+        aria-hidden="true"
+        className="header-grid-glow pointer-events-none absolute inset-0"
+      />
+      <div
+        key={`scan-line-${scanKey}`}
+        aria-hidden="true"
+        className="header-scan-line pointer-events-none absolute inset-x-0 top-0 h-0.5"
+      />
       <div
         aria-hidden="true"
         className={[
@@ -133,16 +115,8 @@ export function Hero() {
       />
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center py-20 sm:py-24">
-        {/* 1. マーク（イントロのキューブが着地する領域） */}
-        <div
-          ref={logoSlotRef ?? undefined}
-          aria-hidden="true"
-          className={
-            introDone
-              ? "header-logo header-logo--visible mb-3"
-              : "header-logo mb-3"
-          }
-        >
+        {/* 1. マーク */}
+        <div aria-hidden="true" className="header-logo mb-3">
           {profile.name.charAt(0)}
         </div>
 
@@ -160,12 +134,12 @@ export function Hero() {
         <h1
           className={[
             "hero-h1-reveal",
-            introDone ? "hero-h1-reveal--in" : "",
+            "hero-h1-reveal--in",
             "mt-4 text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl",
           ]
             .filter(Boolean)
             .join(" ")}
-          style={{ animationDelay: introDone ? "180ms" : undefined }}
+          style={{ animationDelay: "180ms" }}
         >
           {profile.name}
         </h1>
@@ -257,7 +231,7 @@ export function Hero() {
         <span
           className={[
             "hero-scroll-line",
-            introDone ? "hero-scroll-line--in" : "",
+            "hero-scroll-line--in",
             "h-12 w-px bg-accent/50",
           ]
             .filter(Boolean)
