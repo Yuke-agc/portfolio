@@ -7,7 +7,7 @@ const STAGGER_MS = 80;
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-border">
-      <div className="mx-auto flex w-full max-w-5xl flex-col items-start gap-6 px-4 py-12 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
         <FadeIn delayMs={0}>
           <p className="text-sm text-muted">
             &copy; {new Date().getFullYear()} {profile.name}

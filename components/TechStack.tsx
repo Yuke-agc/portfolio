@@ -7,20 +7,20 @@ export function TechStack() {
   return (
     <section
       id="tech-stack"
-      className="mx-auto w-full max-w-5xl px-4 py-16 sm:px-6"
+      className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 sm:px-8 md:grid-cols-[1fr_1.4fr] lg:px-12 lg:py-24"
     >
       <FadeIn delayMs={0}>
-        <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-          技術スタック
-        </h2>
+        <p className="text-xs font-medium uppercase tracking-[0.3em] text-accent">Tools / Craft</p>
+        <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-foreground">考えたものを、<br />動く形まで。</h2>
       </FadeIn>
       <FadeIn delayMs={STAGGER_MS}>
-        <ul className="mt-8 flex flex-wrap gap-3">
-          {techStack.map((tech) => (
+        <ul className="grid grid-cols-2 border-t border-border sm:grid-cols-3">
+          {techStack.map((tech, index) => (
             <li
               key={tech}
-              className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-foreground/90"
+              className="flex items-center gap-3 border-b border-border py-4 text-sm text-foreground/85"
             >
+              <span className="text-[10px] tabular-nums text-muted">{String(index + 1).padStart(2, "0")}</span>
               {tech}
             </li>
           ))}

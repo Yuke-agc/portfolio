@@ -6,6 +6,9 @@ export type Profile = {
   title: string;
   /** Heroの価値提案本文 */
   valueProposition: string;
+  /** Heroで最も大きく表示するステートメント */
+  heroStatement: string;
+  heroStatementMobile: string;
   /** 現在取り組んでいるプロジェクト名（「Now building: 」に続けて表示） */
   nowBuilding: string;
   /**
@@ -24,7 +27,9 @@ export const profile: Profile = {
   tagline: "エンジニア。個人開発でWebサービスをつくっています。",
   title: "Product Engineer",
   valueProposition:
-    "余計なノイズを減らし、人の言葉が残るWebサービスを設計・実装しています。",
+    "プロダクトの考え方から画面の細部まで、設計と実装を行き来しながら形にしています。",
+  heroStatement: "余計なノイズを減らし、\n人の言葉が残る\nWebサービスを。",
+  heroStatementMobile: "余計なノイズを\n減らし、\n人の言葉が残る\nWebサービスを。",
   nowBuilding: "YOHAKU",
   contactEmailUser: "yuke.agc",
   contactEmailDomain: "gmail.com",
