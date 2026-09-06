@@ -1,74 +1,98 @@
 import * as THREE from "three";
 
-/** 一筆書きのYK。先頭3点は奥から近づく助走で、P3以降が発光する軌跡。 */
-export const SPLASH_CURVE_POINTS: readonly [number, number, number][] = [
-  [-2.8, 0.9, -8],
-  [-2.25, 0.65, -4.5],
-  [-1.95, 1.15, -1.5],
-  [-1.75, 1.35, 0],
-  [-1.05, 0.35, 0],
-  [-0.35, 1.35, 0],
-  [-1.05, 0.35, 0],
-  [-1.05, -1.35, 0],
-  [-0.35, -1.35, 0.02],
-  [-0.35, 1.35, 0],
-  [-0.35, 0, 0],
-  [0.95, 1.35, 0],
-  [-0.35, 0, 0],
-  [1.05, -1.35, 0.06],
-] as const;
+export const CUBE_SIZE = 0.58;
+export const CUBE_EFFECTIVE_RADIUS = CUBE_SIZE / 2;
 
-const ENTRY_END_INDEX = 3;
-const ARC_MID_INDEX = 7;
-const ARC_LATE_INDEX = 11;
+type MotionSegment = {
+  from: readonly [number, number, number];
+  to: readonly [number, number, number];
+  draw: boolean;
+};
+
+const motionSegments: readonly MotionSegment[] = [
+  { from: [-2.8, 0.75, -8], to: [-2.25, 0.55, -4.6], draw: false },
+  { from: [-2.25, 0.55, -4.6], to: [-1.8, 0.9, -1.4], draw: false },
+  { from: [-1.8, 0.9, -1.4], to: [-1.45, 1.15, 0], draw: false },
+  { from: [-1.45, 1.15, 0], to: [-0.85, 0.22, 0], draw: true },
+  { from: [-0.85, 0.22, 0], to: [-0.25, 1.15, 0], draw: true },
+  { from: [-0.25, 1.15, 0], to: [-0.25, 1.15, 0.42], draw: false },
+  { from: [-0.25, 1.15, 0.42], to: [-0.85, 0.22, 0.42], draw: false },
+  { from: [-0.85, 0.22, 0.42], to: [-0.85, 0.22, 0], draw: false },
+  { from: [-0.85, 0.22, 0], to: [-0.85, -1.15, 0], draw: true },
+  { from: [-0.85, -1.15, 0], to: [-0.85, -1.15, 0.48], draw: false },
+  { from: [-0.85, -1.15, 0.48], to: [-0.05, 1.15, 0.48], draw: false },
+  { from: [-0.05, 1.15, 0.48], to: [-0.05, 1.15, 0], draw: false },
+  { from: [-0.05, 1.15, 0], to: [-0.05, -1.15, 0], draw: true },
+  { from: [-0.05, -1.15, 0], to: [-0.05, -1.15, 0.42], draw: false },
+  { from: [-0.05, -1.15, 0.42], to: [-0.05, 0, 0.42], draw: false },
+  { from: [-0.05, 0, 0.42], to: [-0.05, 0, 0], draw: false },
+  { from: [-0.05, 0, 0], to: [0.95, 1.15, 0], draw: true },
+  { from: [0.95, 1.15, 0], to: [0.95, 1.15, 0.42], draw: false },
+  { from: [0.95, 1.15, 0.42], to: [-0.05, 0, 0.42], draw: false },
+  { from: [-0.05, 0, 0.42], to: [-0.05, 0, 0], draw: false },
+  { from: [-0.05, 0, 0], to: [1, -1.15, 0], draw: true },
+] as const;
 
 export type SplashCurve = THREE.CurvePath<THREE.Vector3>;
 
-function makePolyline(points: readonly [number, number, number][]): SplashCurve {
+function line(from: readonly [number, number, number], to: readonly [number, number, number]) {
+  return new THREE.LineCurve3(new THREE.Vector3(...from), new THREE.Vector3(...to));
+}
+
+export function createSplashCurve(): SplashCurve {
   const curve = new THREE.CurvePath<THREE.Vector3>();
-  const vectors = points.map(([x, y, z]) => new THREE.Vector3(x, y, z));
-  for (let index = 1; index < vectors.length; index += 1) {
-    curve.add(new THREE.LineCurve3(vectors[index - 1], vectors[index]));
-  }
+  motionSegments.forEach((segment) => curve.add(line(segment.from, segment.to)));
   return curve;
 }
 
-function fractionAt(index: number) {
-  const lengths = SPLASH_CURVE_POINTS.slice(1).map((point, pointIndex) => {
-    const previous = SPLASH_CURVE_POINTS[pointIndex];
-    return new THREE.Vector3(...point).distanceTo(new THREE.Vector3(...previous));
-  });
-  const total = lengths.reduce((sum, length) => sum + length, 0);
-  return lengths.slice(0, index).reduce((sum, length) => sum + length, 0) / total;
+export function createShapeCurves(): THREE.LineCurve3[] {
+  return motionSegments.filter((segment) => segment.draw).map((segment) => line(segment.from, segment.to));
+}
+
+const lengths = motionSegments.map((segment) => line(segment.from, segment.to).getLength());
+const totalLength = lengths.reduce((sum, length) => sum + length, 0);
+const totalDrawLength = motionSegments.reduce(
+  (sum, segment, index) => sum + (segment.draw ? lengths[index] : 0), 0
+);
+
+function fractionAfterSegment(index: number) {
+  return lengths.slice(0, index + 1).reduce((sum, length) => sum + length, 0) / totalLength;
 }
 
 export function getCurveLandmarks() {
   return {
-    entryEnd: fractionAt(ENTRY_END_INDEX),
-    arcMid: fractionAt(ARC_MID_INDEX),
-    arcLate: fractionAt(ARC_LATE_INDEX),
+    entryEnd: fractionAfterSegment(2),
+    yEnd: fractionAfterSegment(8),
+    kStemEnd: fractionAfterSegment(12),
     final: 1,
   };
 }
 
-export const TRAIL_END_U = 1;
-export const CUBE_SIZE = 0.62;
-export const CUBE_EFFECTIVE_RADIUS = CUBE_SIZE / 2;
-
-export const DEPTH_SCALE_RANGE = {
-  zFar: -8,
-  zNear: 0.35,
-  scaleFar: 0.22,
-  scaleNear: 1,
-};
-
-export function createSplashCurve(): SplashCurve {
-  return makePolyline(SPLASH_CURVE_POINTS);
+export function getTrailFractionAt(u: number) {
+  const distance = THREE.MathUtils.clamp(u, 0, 1) * totalLength;
+  let traversed = 0;
+  let drawn = 0;
+  for (let index = 0; index < motionSegments.length; index += 1) {
+    const segmentLength = lengths[index];
+    const within = THREE.MathUtils.clamp(distance - traversed, 0, segmentLength);
+    if (motionSegments[index].draw) drawn += within;
+    traversed += segmentLength;
+    if (distance <= traversed) break;
+  }
+  return drawn / totalDrawLength;
 }
 
-export function createShapeCurve(): SplashCurve {
-  return makePolyline(SPLASH_CURVE_POINTS.slice(ENTRY_END_INDEX));
+export function isDrawingAt(u: number) {
+  const distance = THREE.MathUtils.clamp(u, 0, 1) * totalLength;
+  let traversed = 0;
+  for (let index = 0; index < motionSegments.length; index += 1) {
+    traversed += lengths[index];
+    if (distance <= traversed) return motionSegments[index].draw;
+  }
+  return false;
 }
+
+export const DEPTH_SCALE_RANGE = { zFar: -8, zNear: 0.5, scaleFar: 0.2, scaleNear: 1 };
 
 export function depthScale(z: number): number {
   const { zFar, zNear, scaleFar, scaleNear } = DEPTH_SCALE_RANGE;

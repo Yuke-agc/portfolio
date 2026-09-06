@@ -8,7 +8,7 @@ import { TrailPath, type TrailPathHandle } from "./TrailPath";
 import { BloomEffect } from "./BloomEffect";
 
 type SplashCanvasProps = {
-  shapeCurve: THREE.Curve<THREE.Vector3>;
+  shapeCurves: readonly THREE.Curve<THREE.Vector3>[];
   cubeMeshRef: RefObject<THREE.Mesh | null>;
   cubeMaterialRef: RefObject<THREE.MeshStandardMaterial | null>;
   cameraRef: RefObject<THREE.PerspectiveCamera | null>;
@@ -20,7 +20,7 @@ type SplashCanvasProps = {
 
 /** <Canvas> 本体。カメラ・ライトの設定のみを担当し、演出ロジックは持たない */
 export function SplashCanvas({
-  shapeCurve,
+  shapeCurves,
   cubeMeshRef,
   cubeMaterialRef,
   cameraRef,
@@ -31,18 +31,24 @@ export function SplashCanvas({
 }: SplashCanvasProps) {
   return (
     <Canvas
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: false }}
+      dpr={[1, 1.75]}
+      shadows
+      gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
       onCreated={onReady}
     >
       <color attach="background" args={["#080809"]} />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[-3, 5, 4]} intensity={2.2} color="#fff4df" />
-      <directionalLight position={[4, -2, 3]} intensity={1.1} color="#d9a566" />
+      <ambientLight intensity={0.28} />
+      <directionalLight castShadow position={[-3, 5, 4]} intensity={1.65} color="#fff4df" />
+      <directionalLight position={[4, -2, 3]} intensity={0.65} color="#d9a566" />
+
+      <mesh position={[0, 0, -0.32]} receiveShadow>
+        <planeGeometry args={[12, 9]} />
+        <meshStandardMaterial color="#0b0b0c" roughness={0.92} metalness={0.08} />
+      </mesh>
 
       <CameraRig cameraRef={cameraRef} lookAtRef={lookAtRef} />
       <RollingCube meshRef={cubeMeshRef} materialRef={cubeMaterialRef} />
-      <TrailPath ref={trailRef} curve={shapeCurve} />
+      <TrailPath ref={trailRef} curves={shapeCurves} />
       <BloomEffect bloomRef={bloomRef} />
     </Canvas>
   );

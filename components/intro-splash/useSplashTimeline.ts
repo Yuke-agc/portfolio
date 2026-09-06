@@ -4,7 +4,7 @@ import gsap from "gsap";
 import * as THREE from "three";
 import type { BloomEffect as PostprocessingBloomEffect } from "postprocessing";
 import type { TrailPathHandle } from "./TrailPath";
-import { CUBE_EFFECTIVE_RADIUS, TRAIL_END_U, depthScale, getCurveLandmarks } from "./curve";
+import { CUBE_SIZE, depthScale, getCurveLandmarks, getTrailFractionAt, isDrawingAt } from "./curve";
 
 export type SplashTimelineRefs = {
   cubeMeshRef: RefObject<THREE.Mesh | null>;
@@ -25,19 +25,19 @@ type UseSplashTimelineOptions = {
   onTitleReveal: () => void;
 };
 
-const WORLD_UP = new THREE.Vector3(0, 1, 0);
-const BASE_BLOOM_INTENSITY = 0.6;
+const SURFACE_NORMAL = new THREE.Vector3(0, 0, 1);
+const BASE_BLOOM_INTENSITY = 0.22;
 
 /** 設計書の時間割（6秒基準）を duration に対する割合として保持する */
 const PHASE = {
   appearEnd: 0.5 / 6,
-  driftEnd: 1.2 / 6,
-  bigMoveEnd: 2.5 / 6,
-  shapeEnd: 3.8 / 6,
-  centerEnd: 4.5 / 6,
-  bounceMid: 4.7 / 6,
-  bounceEnd: 5.0 / 6,
-  titleEnd: 5.5 / 6,
+  driftEnd: 0.9 / 4.2,
+  bigMoveEnd: 2.0 / 4.2,
+  shapeEnd: 3.15 / 4.2,
+  centerEnd: 3.5 / 4.2,
+  bounceMid: 3.62 / 4.2,
+  bounceEnd: 3.75 / 4.2,
+  titleEnd: 4.05 / 4.2,
   end: 1,
 };
 
@@ -84,6 +84,7 @@ export function useSplashTimeline({
     const rollAxis = new THREE.Vector3();
     const deltaQuat = new THREE.Quaternion();
     const endTangent = curve.getTangentAt(1).clone().normalize();
+    let rollAngle = 0;
 
     function applyFrame() {
       const cube = cubeMeshRef.current;
@@ -95,8 +96,6 @@ export function useSplashTimeline({
         if (u >= 1 - 1e-4 && state.overshoot !== 0) {
           currentPoint.addScaledVector(endTangent, state.overshoot);
         }
-        cube.position.copy(currentPoint);
-
         const eps = 0.0015;
         nextPoint.copy(curve!.getPointAt(Math.min(u + eps, 1)));
         tangent.copy(nextPoint).sub(currentPoint);
@@ -104,18 +103,26 @@ export function useSplashTimeline({
 
         if (tangent.lengthSq() > 1e-10 && distSincePrev > 1e-6) {
           tangent.normalize();
-          rollAxis.crossVectors(WORLD_UP, tangent);
+          rollAxis.crossVectors(SURFACE_NORMAL, tangent);
           if (rollAxis.lengthSq() < 1e-6) {
             rollAxis.set(1, 0, 0);
           } else {
             rollAxis.normalize();
           }
-          const dAngle = distSincePrev / CUBE_EFFECTIVE_RADIUS;
+          const dAngle = (distSincePrev / CUBE_SIZE) * (Math.PI / 2);
+          rollAngle += dAngle;
           deltaQuat.setFromAxisAngle(rollAxis, dAngle);
           cubeQuat.premultiply(deltaQuat);
           cube.quaternion.copy(cubeQuat);
         }
         prevPoint.copy(currentPoint);
+
+        if (isDrawingAt(u) && currentPoint.z < 0.1) {
+          const quarterTurn = rollAngle % (Math.PI / 2);
+          const centerHeight = CUBE_SIZE / 2 * (Math.cos(quarterTurn) + Math.sin(quarterTurn));
+          currentPoint.z += Math.max(0, centerHeight - CUBE_SIZE / 2);
+        }
+        cube.position.copy(currentPoint);
 
         cube.scale.setScalar(state.appearIn * depthScale(currentPoint.z));
       }
@@ -125,8 +132,7 @@ export function useSplashTimeline({
         material.emissiveIntensity = 0.25 + state.brighten * 0.8;
       }
 
-      const trailFraction = (u - landmarks.entryEnd) / (TRAIL_END_U - landmarks.entryEnd);
-      trailRef.current?.setReveal(trailFraction);
+      trailRef.current?.setReveal(getTrailFractionAt(u));
 
       if (bloomRef.current) {
         bloomRef.current.intensity = BASE_BLOOM_INTENSITY + state.brighten * 1.2;
@@ -188,13 +194,13 @@ export function useSplashTimeline({
     // 1.20-2.50s: 大きく移動、軌跡が見え始める（P3→P6付近）
     tl.to(
       state,
-      { u: landmarks.arcMid, duration: at(PHASE.bigMoveEnd) - at(PHASE.driftEnd), ease: "power2.inOut" },
+      { u: landmarks.yEnd, duration: at(PHASE.bigMoveEnd) - at(PHASE.driftEnd), ease: "power2.inOut" },
       at(PHASE.driftEnd)
     );
     // 2.50-3.80s: 形状が見えてくる（P6→P10付近）
     tl.to(
       state,
-      { u: landmarks.arcLate, duration: at(PHASE.shapeEnd) - at(PHASE.bigMoveEnd), ease: "power2.inOut" },
+      { u: landmarks.kStemEnd, duration: at(PHASE.shapeEnd) - at(PHASE.bigMoveEnd), ease: "power2.inOut" },
       at(PHASE.bigMoveEnd)
     );
     // 3.80-4.50s: 中心へ折れ込み、軌跡完成

@@ -7,7 +7,7 @@ import { SplashCanvas } from "./SplashCanvas";
 import type { TrailPathHandle } from "./TrailPath";
 import { TitleText } from "./TitleText";
 import { useSplashTimeline } from "./useSplashTimeline";
-import { createSplashCurve, createShapeCurve } from "./curve";
+import { createSplashCurve, createShapeCurves } from "./curve";
 
 export type IntroSplashProps = {
   /** アニメーション全体の尺(ms)。区間の比率は維持したままスケールする */
@@ -24,7 +24,7 @@ export type IntroSplashProps = {
  */
 export function IntroSplash({ duration = 6000, onComplete, title = "YK" }: IntroSplashProps) {
   const curve = useMemo(() => createSplashCurve(), []);
-  const shapeCurve = useMemo(() => createShapeCurve(), []);
+  const shapeCurves = useMemo(() => createShapeCurves(), []);
 
   const cubeMeshRef = useRef<THREE.Mesh | null>(null);
   const cubeMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
@@ -48,10 +48,11 @@ export function IntroSplash({ duration = 6000, onComplete, title = "YK" }: Intro
   return (
     <div
       className="intro-splash fixed inset-0 z-[200] h-dvh w-screen bg-black"
-      aria-hidden="true"
+      role="dialog"
+      aria-label="YKイントロアニメーション"
     >
       <SplashCanvas
-        shapeCurve={shapeCurve}
+        shapeCurves={shapeCurves}
         cubeMeshRef={cubeMeshRef}
         cubeMaterialRef={cubeMaterialRef}
         cameraRef={cameraRef}
@@ -61,6 +62,13 @@ export function IntroSplash({ duration = 6000, onComplete, title = "YK" }: Intro
         onReady={() => setReady(true)}
       />
       <TitleText title={title} visible={showTitle} />
+      <button
+        type="button"
+        onClick={onComplete}
+        className="absolute right-5 top-5 min-h-11 rounded-full border border-white/15 px-4 text-[11px] font-medium uppercase tracking-[0.18em] text-white/55 transition hover:border-white/30 hover:text-white sm:right-8 sm:top-8"
+      >
+        Skip
+      </button>
     </div>
   );
 }

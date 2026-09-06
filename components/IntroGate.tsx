@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { IntroContext } from "@/lib/intro-context";
 
 const IntroSplash = dynamic(
@@ -21,6 +21,19 @@ type IntroGateProps = {
 export function IntroGate({ children }: IntroGateProps) {
   const [introDone, setIntroDone] = useState(false);
   const finishedRef = useRef(false);
+  const previousOverflowRef = useRef("");
+
+  const finish = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    try {
+      window.sessionStorage.setItem("portfolio-intro-seen", "1");
+    } catch {
+      // Storageを利用できない環境でも、本体表示は続行する。
+    }
+    document.body.style.overflow = previousOverflowRef.current;
+    setIntroDone(true);
+  }, []);
 
   useEffect(() => {
     let prefersReducedMotion = false;
@@ -32,27 +45,31 @@ export function IntroGate({ children }: IntroGateProps) {
       prefersReducedMotion = true;
     }
 
-    if (prefersReducedMotion) {
+    const forceReplay = new URLSearchParams(window.location.search).get("intro") === "1";
+    let alreadySeen = false;
+    try {
+      alreadySeen = window.sessionStorage.getItem("portfolio-intro-seen") === "1";
+    } catch {
+      // 読み取り不可なら通常どおり再生する。
+    }
+
+    if (prefersReducedMotion || (alreadySeen && !forceReplay)) {
+      finishedRef.current = true;
       queueMicrotask(() => setIntroDone(true));
       return;
     }
 
-    const previousOverflow = document.body.style.overflow;
+    previousOverflowRef.current = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const fallbackTimer = window.setTimeout(finish, 7000);
 
     return () => {
+      window.clearTimeout(fallbackTimer);
       if (!finishedRef.current) {
-        document.body.style.overflow = previousOverflow;
+        document.body.style.overflow = previousOverflowRef.current;
       }
     };
-  }, []);
-
-  const finish = () => {
-    if (finishedRef.current) return;
-    finishedRef.current = true;
-    document.body.style.overflow = "";
-    setIntroDone(true);
-  };
+  }, [finish]);
 
   const contextValue = useMemo(() => ({ introDone }), [introDone]);
 
@@ -65,7 +82,7 @@ export function IntroGate({ children }: IntroGateProps) {
           __html: "<style>.intro-splash{display:none !important}</style>",
         }}
       />
-      {!introDone && <IntroSplash duration={6000} onComplete={finish} />}
+      {!introDone && <IntroSplash duration={4200} onComplete={finish} />}
       {children}
     </IntroContext.Provider>
   );
