@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { profile } from "@/lib/constants/profile";
+import { IntroGate } from "@/components/IntroGate";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,7 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
-        {children}
+        <IntroGate>{children}</IntroGate>
       </body>
     </html>
   );

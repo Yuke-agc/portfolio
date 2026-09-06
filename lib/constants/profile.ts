@@ -16,6 +16,9 @@ export type Profile = {
   contactEmailDomain: string;
 };
 
+/** ヘッダーの header-logo で使う短縮マーク */
+export const BRAND_MARK = "YK";
+
 export const profile: Profile = {
   name: "ゆけ",
   tagline: "エンジニア。個人開発でWebサービスをつくっています。",

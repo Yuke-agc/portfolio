@@ -332,7 +332,20 @@
   }
 }
 
-/* ヘッダーの静的ロゴ */
+@media (prefers-reduced-motion: reduce) {
+  /* JS 側の判定が効く前の初回ペイントでも IntroSplash を一切表示しない。
+     ロゴは最初から静的表示にする */
+  .intro-splash {
+    display: none;
+  }
+
+  .header-logo {
+    opacity: 1;
+  }
+}
+
+/* ヘッダーの静的ロゴ。着地後の立方体前面（.intro-cube-face--front）と
+   同じ見た目にし、立方体がそのままロゴになったように見せる */
 .header-logo {
   display: flex;
   width: 48px;
@@ -341,9 +354,18 @@
   justify-content: center;
   border: 1px solid var(--accent);
   background: rgb(217 165 102 / 0.06);
-  font-size: 1.15rem;
+  font-family: var(--font-mono);
+  /* 2文字（YK）を48×48pxの枠に収めるため、字間を詰めてやや小さめに */
+  font-size: 1rem;
   font-weight: 700;
+  letter-spacing: -0.04em;
   color: var(--accent);
+  opacity: 0;
+  transition: opacity 150ms var(--ease-premium);
+}
+
+.header-logo--visible {
+  opacity: 1;
 }
 
 html {
