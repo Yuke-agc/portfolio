@@ -29,7 +29,7 @@ export function TitleText({ visible }: TitleTextProps) {
       animate={visible
         ? { opacity: [0, 1, 1], x: [0, 0, target.x], y: [0, 0, target.y], scale: [1.04, 1, target.scale] }
         : { opacity: 0, x: 0, y: 0, scale: 1.04 }}
-      transition={{ duration: 0.82, times: [0, 0.18, 1], ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, times: [0, 0.2, 1], ease: [0.16, 1, 0.3, 1] }}
     >
       <BrandMark className="h-full w-full" />
     </motion.div>

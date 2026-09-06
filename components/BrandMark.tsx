@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { BRAND_STROKES, brandStrokePath } from "@/lib/brand-mark";
+import { brandPath } from "@/lib/brand-mark";
 
 type BrandMarkProps = {
   className?: string;
@@ -17,17 +17,14 @@ export function BrandMark({ className, style, title }: BrandMarkProps) {
       aria-hidden={title ? undefined : true}
     >
       {title && <title>{title}</title>}
-      {BRAND_STROKES.map((points, index) => (
-        <path
-          key={index}
-          d={brandStrokePath(points)}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="7"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-        />
-      ))}
+      <path
+        d={brandPath()}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="6.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

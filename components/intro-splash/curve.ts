@@ -1,110 +1,78 @@
 import * as THREE from "three";
-import { BRAND_STROKES, type BrandPoint } from "@/lib/brand-mark";
+import { BRAND_CURVES, type BrandPoint } from "@/lib/brand-mark";
 
 export const CUBE_SIZE = 0.58;
-
-type MotionSegment = {
-  from: readonly [number, number, number];
-  to: readonly [number, number, number];
-  draw: boolean;
-  strokeIndex?: number;
-};
-
-function worldPoint([x, y]: BrandPoint, z = 0): readonly [number, number, number] {
-  return [(x - 50) * 0.026, (50 - y) * 0.026, z];
-}
-
-function samePoint(a: readonly number[], b: readonly number[]) {
-  return a.every((value, index) => value === b[index]);
-}
-
-function buildMotionSegments(): MotionSegment[] {
-  const first = worldPoint(BRAND_STROKES[0][0]);
-  const segments: MotionSegment[] = [
-    { from: [-2.7, 0.72, -8], to: [-2.2, 0.55, -4.6], draw: false },
-    { from: [-2.2, 0.55, -4.6], to: [-1.65, 0.82, -1.35], draw: false },
-    { from: [-1.65, 0.82, -1.35], to: first, draw: false },
-  ];
-  let current = first;
-
-  BRAND_STROKES.forEach((stroke, strokeIndex) => {
-    const start = worldPoint(stroke[0]);
-    if (!samePoint(current, start)) {
-      const liftFrom = [current[0], current[1], 0.44] as const;
-      const liftTo = [start[0], start[1], 0.44] as const;
-      segments.push(
-        { from: current, to: liftFrom, draw: false },
-        { from: liftFrom, to: liftTo, draw: false },
-        { from: liftTo, to: start, draw: false }
-      );
-      current = start;
-    }
-    for (let index = 1; index < stroke.length; index += 1) {
-      const end = worldPoint(stroke[index]);
-      segments.push({ from: current, to: end, draw: true, strokeIndex });
-      current = end;
-    }
-  });
-  return segments;
-}
-
-const motionSegments = buildMotionSegments();
 export type SplashCurve = THREE.CurvePath<THREE.Vector3>;
 
-function line(from: readonly [number, number, number], to: readonly [number, number, number]) {
-  return new THREE.LineCurve3(new THREE.Vector3(...from), new THREE.Vector3(...to));
+function worldPoint([x, y]: BrandPoint, z = 0) {
+  return new THREE.Vector3((x - 50) * 0.026, (50 - y) * 0.026, z);
 }
 
-export function createSplashCurve(): SplashCurve {
+function makeBrandCurve() {
   const curve = new THREE.CurvePath<THREE.Vector3>();
-  motionSegments.forEach((segment) => curve.add(line(segment.from, segment.to)));
+  BRAND_CURVES.forEach(({ from, control1, control2, to }) => {
+    curve.add(new THREE.CubicBezierCurve3(
+      worldPoint(from),
+      worldPoint(control1),
+      worldPoint(control2),
+      worldPoint(to)
+    ));
+  });
   return curve;
 }
 
-export function createShapeCurves(): THREE.LineCurve3[] {
-  return motionSegments.filter((segment) => segment.draw).map((segment) => line(segment.from, segment.to));
+const brandCurve = makeBrandCurve();
+const brandLength = brandCurve.getLength();
+const firstPoint = worldPoint(BRAND_CURVES[0].from);
+const approachPoints = [
+  new THREE.Vector3(-2.7, 0.72, -8),
+  new THREE.Vector3(-2.2, 0.55, -4.6),
+  new THREE.Vector3(-1.65, 0.82, -1.35),
+  firstPoint,
+];
+const approachLengths = approachPoints.slice(1).map((point, index) => point.distanceTo(approachPoints[index]));
+const approachLength = approachLengths.reduce((sum, length) => sum + length, 0);
+const totalLength = approachLength + brandLength;
+
+export function createSplashCurve(): SplashCurve {
+  const curve = new THREE.CurvePath<THREE.Vector3>();
+  approachPoints.slice(1).forEach((point, index) => {
+    curve.add(new THREE.LineCurve3(approachPoints[index], point));
+  });
+  BRAND_CURVES.forEach(({ from, control1, control2, to }) => {
+    curve.add(new THREE.CubicBezierCurve3(
+      worldPoint(from), worldPoint(control1), worldPoint(control2), worldPoint(to)
+    ));
+  });
+  return curve;
 }
 
-const lengths = motionSegments.map((segment) => line(segment.from, segment.to).getLength());
-const totalLength = lengths.reduce((sum, length) => sum + length, 0);
-const totalDrawLength = motionSegments.reduce((sum, segment, index) => sum + (segment.draw ? lengths[index] : 0), 0);
+export function createShapeCurves(): SplashCurve[] {
+  return [makeBrandCurve()];
+}
 
-function fractionAfter(predicate: (segment: MotionSegment) => boolean) {
-  let last = 0;
-  motionSegments.forEach((segment, index) => { if (predicate(segment)) last = index; });
-  return lengths.slice(0, last + 1).reduce((sum, length) => sum + length, 0) / totalLength;
+function shapeFractionAfter(curveIndex: number) {
+  const partial = brandCurve.curves
+    .slice(0, curveIndex + 1)
+    .reduce((sum, curve) => sum + curve.getLength(), 0);
+  return (approachLength + partial) / totalLength;
 }
 
 export function getCurveLandmarks() {
   return {
-    entryEnd: lengths.slice(0, 3).reduce((sum, length) => sum + length, 0) / totalLength,
-    yEnd: fractionAfter((segment) => segment.strokeIndex === 2),
-    kStemEnd: fractionAfter((segment) => segment.strokeIndex === 3),
+    entryEnd: approachLength / totalLength,
+    yEnd: shapeFractionAfter(3),
+    kStemEnd: shapeFractionAfter(5),
     final: 1,
   };
 }
 
 export function getTrailFractionAt(u: number) {
-  const distance = THREE.MathUtils.clamp(u, 0, 1) * totalLength;
-  let traversed = 0;
-  let drawn = 0;
-  for (let index = 0; index < motionSegments.length; index += 1) {
-    const within = THREE.MathUtils.clamp(distance - traversed, 0, lengths[index]);
-    if (motionSegments[index].draw) drawn += within;
-    traversed += lengths[index];
-    if (distance <= traversed) break;
-  }
-  return drawn / totalDrawLength;
+  return THREE.MathUtils.clamp((u * totalLength - approachLength) / brandLength, 0, 1);
 }
 
 export function isDrawingAt(u: number) {
-  const distance = THREE.MathUtils.clamp(u, 0, 1) * totalLength;
-  let traversed = 0;
-  for (let index = 0; index < motionSegments.length; index += 1) {
-    traversed += lengths[index];
-    if (distance <= traversed) return motionSegments[index].draw;
-  }
-  return false;
+  return u >= approachLength / totalLength;
 }
 
 export const DEPTH_SCALE_RANGE = { zFar: -8, zNear: 0.5, scaleFar: 0.2, scaleNear: 1 };

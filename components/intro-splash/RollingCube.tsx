@@ -3,7 +3,7 @@
 import { useEffect, useMemo, type RefObject } from "react";
 import { Edges, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
-import { BRAND_STROKES } from "@/lib/brand-mark";
+import { brandPath } from "@/lib/brand-mark";
 import { CUBE_SIZE } from "./curve";
 
 type RollingCubeProps = {
@@ -27,19 +27,14 @@ function createFaceTexture() {
     context.lineWidth = 5;
     context.strokeRect(25, 25, 462, 462);
     context.strokeStyle = "#e7b978";
-    context.lineWidth = 28;
-    context.lineCap = "square";
-    context.lineJoin = "miter";
-    BRAND_STROKES.forEach((stroke) => {
-      context.beginPath();
-      stroke.forEach(([x, y], index) => {
-        const px = 46 + x * 4.2;
-        const py = 46 + y * 4.2;
-        if (index === 0) context.moveTo(px, py);
-        else context.lineTo(px, py);
-      });
-      context.stroke();
-    });
+    context.save();
+    context.translate(46, 46);
+    context.scale(4.2, 4.2);
+    context.lineWidth = 6.5;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.stroke(new Path2D(brandPath()));
+    context.restore();
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;

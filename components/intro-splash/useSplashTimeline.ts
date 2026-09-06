@@ -33,10 +33,10 @@ const PHASE = {
   appearEnd: 0.5 / 6,
   driftEnd: 0.9 / 4.2,
   bigMoveEnd: 1.8 / 4.2,
-  shapeEnd: 2.85 / 4.2,
-  centerEnd: 3.15 / 4.2,
-  bounceMid: 3.25 / 4.2,
-  bounceEnd: 3.35 / 4.2,
+  shapeEnd: 2.7 / 4.2,
+  centerEnd: 2.95 / 4.2,
+  bounceMid: 3.05 / 4.2,
+  bounceEnd: 3.65 / 4.2,
   titleEnd: 4.1 / 4.2,
   end: 1,
 };
@@ -74,6 +74,7 @@ export function useSplashTimeline({
       appearIn: 0,
       overshoot: 0,
       brighten: 0,
+      disappear: 0,
     };
 
     const cubeQuat = new THREE.Quaternion();
@@ -122,13 +123,16 @@ export function useSplashTimeline({
           const centerHeight = CUBE_SIZE / 2 * (Math.cos(quarterTurn) + Math.sin(quarterTurn));
           currentPoint.z += Math.max(0, centerHeight - CUBE_SIZE / 2);
         }
+        currentPoint.z -= state.disappear * 0.3;
         cube.position.copy(currentPoint);
 
-        cube.scale.setScalar(state.appearIn * depthScale(currentPoint.z));
+        const dissolveScale = 1 - state.disappear * 0.72;
+        cube.scale.setScalar(state.appearIn * depthScale(currentPoint.z) * dissolveScale);
+        cube.visible = state.disappear < 0.995;
       }
 
       if (material) {
-        material.opacity = state.appearIn;
+        material.opacity = state.appearIn * (1 - state.disappear);
         material.emissiveIntensity = 0.25 + state.brighten * 0.8;
       }
 
@@ -225,6 +229,11 @@ export function useSplashTimeline({
       state,
       { brighten: 1, duration: at(PHASE.bounceEnd) - at(PHASE.centerEnd), ease: "power1.out" },
       at(PHASE.centerEnd)
+    );
+    tl.to(
+      state,
+      { disappear: 1, duration: at(PHASE.bounceEnd) - at(PHASE.bounceMid), ease: "power2.in" },
+      at(PHASE.bounceMid)
     );
     tl.to(
       state,
