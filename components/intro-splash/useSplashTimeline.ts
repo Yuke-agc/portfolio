@@ -32,12 +32,12 @@ const BASE_BLOOM_INTENSITY = 0.22;
 const PHASE = {
   appearEnd: 0.5 / 6,
   driftEnd: 0.9 / 4.2,
-  bigMoveEnd: 2.0 / 4.2,
-  shapeEnd: 3.15 / 4.2,
-  centerEnd: 3.5 / 4.2,
-  bounceMid: 3.62 / 4.2,
-  bounceEnd: 3.75 / 4.2,
-  titleEnd: 4.05 / 4.2,
+  bigMoveEnd: 1.8 / 4.2,
+  shapeEnd: 2.85 / 4.2,
+  centerEnd: 3.15 / 4.2,
+  bounceMid: 3.25 / 4.2,
+  bounceEnd: 3.35 / 4.2,
+  titleEnd: 4.1 / 4.2,
   end: 1,
 };
 
