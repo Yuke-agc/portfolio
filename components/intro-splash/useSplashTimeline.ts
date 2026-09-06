@@ -17,7 +17,7 @@ export type SplashTimelineRefs = {
 
 type UseSplashTimelineOptions = {
   refs: SplashTimelineRefs;
-  curve: THREE.CatmullRomCurve3 | null;
+  curve: THREE.Curve<THREE.Vector3> | null;
   /** Canvas がマウントされ、上記 ref が全て実体を持った状態になったか */
   ready: boolean;
   duration: number;
@@ -67,7 +67,7 @@ export function useSplashTimeline({
     if (!ready || !curve) return;
 
     const { cubeMeshRef, cubeMaterialRef, cameraRef, lookAtRef, trailRef, bloomRef } = refs;
-    const landmarks = getCurveLandmarks(curve);
+    const landmarks = getCurveLandmarks();
 
     const state = {
       u: 0,
@@ -149,17 +149,17 @@ export function useSplashTimeline({
     if (camera) {
       tl.to(
         camera.position,
-        { x: 0.35, y: 0.15, z: 5.0, duration: at(PHASE.bigMoveEnd) - at(PHASE.appearEnd), ease: "sine.inOut" },
+        { x: 0.28, y: 0.15, z: 6.4, duration: at(PHASE.bigMoveEnd) - at(PHASE.appearEnd), ease: "sine.inOut" },
         at(PHASE.appearEnd)
       );
       tl.to(
         camera.position,
-        { x: 0.12, y: 0.04, z: 4.4, duration: at(PHASE.shapeEnd) - at(PHASE.bigMoveEnd), ease: "sine.inOut" },
+        { x: 0.08, y: 0.04, z: 6.0, duration: at(PHASE.shapeEnd) - at(PHASE.bigMoveEnd), ease: "sine.inOut" },
         at(PHASE.bigMoveEnd)
       );
       tl.to(
         camera.position,
-        { x: 0, y: 0, z: 4.2, duration: at(PHASE.centerEnd) - at(PHASE.shapeEnd), ease: "power2.out" },
+        { x: 0, y: 0, z: 5.8, duration: at(PHASE.centerEnd) - at(PHASE.shapeEnd), ease: "power2.out" },
         at(PHASE.shapeEnd)
       );
     }

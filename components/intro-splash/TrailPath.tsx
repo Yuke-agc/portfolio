@@ -12,10 +12,10 @@ export type TrailPathHandle = {
 };
 
 type TrailPathProps = {
-  curve: THREE.CatmullRomCurve3;
+  curve: THREE.Curve<THREE.Vector3>;
 };
 
-function buildTubeGeometry(curve: THREE.CatmullRomCurve3, radius: number) {
+function buildTubeGeometry(curve: THREE.Curve<THREE.Vector3>, radius: number) {
   const geometry = new THREE.TubeGeometry(
     curve,
     TUBULAR_SEGMENTS,
@@ -69,14 +69,14 @@ export const TrailPath = forwardRef<TrailPathHandle, TrailPathProps>(
       <group>
         <mesh geometry={haloGeometry}>
           <meshBasicMaterial
-            color="#a855f7"
+            color="#d9a566"
             transparent
             opacity={0.22}
             depthWrite={false}
           />
         </mesh>
         <mesh geometry={coreGeometry}>
-          <meshBasicMaterial color="#e9d9ff" transparent opacity={0.95} />
+          <meshBasicMaterial color="#ffe0aa" transparent opacity={0.98} />
         </mesh>
       </group>
     );

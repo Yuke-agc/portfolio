@@ -22,7 +22,7 @@ export type IntroSplashProps = {
  * 内部の演出ロジック（位置・回転・軌跡・カメラ・グロー）はすべて
  * useSplashTimeline 経由の GSAP timeline が ref を直接書き換えて駆動する。
  */
-export function IntroSplash({ duration = 6000, onComplete, title = "MY APP" }: IntroSplashProps) {
+export function IntroSplash({ duration = 6000, onComplete, title = "YK" }: IntroSplashProps) {
   const curve = useMemo(() => createSplashCurve(), []);
   const shapeCurve = useMemo(() => createShapeCurve(), []);
 

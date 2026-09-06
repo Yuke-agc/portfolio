@@ -23,10 +23,10 @@ export function CameraRig({ cameraRef, lookAtRef }: CameraRigProps) {
     <PerspectiveCamera
       ref={cameraRef}
       makeDefault
-      fov={45}
+      fov={50}
       near={0.1}
       far={30}
-      position={[0, 0.3, 6.5]}
+      position={[0, 0.3, 7.2]}
     />
   );
 }

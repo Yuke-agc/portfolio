@@ -8,7 +8,7 @@ import { TrailPath, type TrailPathHandle } from "./TrailPath";
 import { BloomEffect } from "./BloomEffect";
 
 type SplashCanvasProps = {
-  shapeCurve: THREE.CatmullRomCurve3;
+  shapeCurve: THREE.Curve<THREE.Vector3>;
   cubeMeshRef: RefObject<THREE.Mesh | null>;
   cubeMaterialRef: RefObject<THREE.MeshStandardMaterial | null>;
   cameraRef: RefObject<THREE.PerspectiveCamera | null>;
@@ -35,9 +35,10 @@ export function SplashCanvas({
       gl={{ antialias: true, alpha: false }}
       onCreated={onReady}
     >
-      <color attach="background" args={["#050505"]} />
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[3, 4, 2]} intensity={1.5} color="#f4ecff" />
+      <color attach="background" args={["#080809"]} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[-3, 5, 4]} intensity={2.2} color="#fff4df" />
+      <directionalLight position={[4, -2, 3]} intensity={1.1} color="#d9a566" />
 
       <CameraRig cameraRef={cameraRef} lookAtRef={lookAtRef} />
       <RollingCube meshRef={cubeMeshRef} materialRef={cubeMaterialRef} />
