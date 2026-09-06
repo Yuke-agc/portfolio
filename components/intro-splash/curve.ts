@@ -1,38 +1,54 @@
 import * as THREE from "three";
+import { BRAND_STROKES, type BrandPoint } from "@/lib/brand-mark";
 
 export const CUBE_SIZE = 0.58;
-export const CUBE_EFFECTIVE_RADIUS = CUBE_SIZE / 2;
 
 type MotionSegment = {
   from: readonly [number, number, number];
   to: readonly [number, number, number];
   draw: boolean;
+  strokeIndex?: number;
 };
 
-const motionSegments: readonly MotionSegment[] = [
-  { from: [-2.8, 0.75, -8], to: [-2.25, 0.55, -4.6], draw: false },
-  { from: [-2.25, 0.55, -4.6], to: [-1.8, 0.9, -1.4], draw: false },
-  { from: [-1.8, 0.9, -1.4], to: [-1.45, 1.15, 0], draw: false },
-  { from: [-1.45, 1.15, 0], to: [-0.85, 0.22, 0], draw: true },
-  { from: [-0.85, 0.22, 0], to: [-0.25, 1.15, 0], draw: true },
-  { from: [-0.25, 1.15, 0], to: [-0.25, 1.15, 0.42], draw: false },
-  { from: [-0.25, 1.15, 0.42], to: [-0.85, 0.22, 0.42], draw: false },
-  { from: [-0.85, 0.22, 0.42], to: [-0.85, 0.22, 0], draw: false },
-  { from: [-0.85, 0.22, 0], to: [-0.85, -1.15, 0], draw: true },
-  { from: [-0.85, -1.15, 0], to: [-0.85, -1.15, 0.48], draw: false },
-  { from: [-0.85, -1.15, 0.48], to: [-0.05, 1.15, 0.48], draw: false },
-  { from: [-0.05, 1.15, 0.48], to: [-0.05, 1.15, 0], draw: false },
-  { from: [-0.05, 1.15, 0], to: [-0.05, -1.15, 0], draw: true },
-  { from: [-0.05, -1.15, 0], to: [-0.05, -1.15, 0.42], draw: false },
-  { from: [-0.05, -1.15, 0.42], to: [-0.05, 0, 0.42], draw: false },
-  { from: [-0.05, 0, 0.42], to: [-0.05, 0, 0], draw: false },
-  { from: [-0.05, 0, 0], to: [0.95, 1.15, 0], draw: true },
-  { from: [0.95, 1.15, 0], to: [0.95, 1.15, 0.42], draw: false },
-  { from: [0.95, 1.15, 0.42], to: [-0.05, 0, 0.42], draw: false },
-  { from: [-0.05, 0, 0.42], to: [-0.05, 0, 0], draw: false },
-  { from: [-0.05, 0, 0], to: [1, -1.15, 0], draw: true },
-] as const;
+function worldPoint([x, y]: BrandPoint, z = 0): readonly [number, number, number] {
+  return [(x - 50) * 0.026, (50 - y) * 0.026, z];
+}
 
+function samePoint(a: readonly number[], b: readonly number[]) {
+  return a.every((value, index) => value === b[index]);
+}
+
+function buildMotionSegments(): MotionSegment[] {
+  const first = worldPoint(BRAND_STROKES[0][0]);
+  const segments: MotionSegment[] = [
+    { from: [-2.7, 0.72, -8], to: [-2.2, 0.55, -4.6], draw: false },
+    { from: [-2.2, 0.55, -4.6], to: [-1.65, 0.82, -1.35], draw: false },
+    { from: [-1.65, 0.82, -1.35], to: first, draw: false },
+  ];
+  let current = first;
+
+  BRAND_STROKES.forEach((stroke, strokeIndex) => {
+    const start = worldPoint(stroke[0]);
+    if (!samePoint(current, start)) {
+      const liftFrom = [current[0], current[1], 0.44] as const;
+      const liftTo = [start[0], start[1], 0.44] as const;
+      segments.push(
+        { from: current, to: liftFrom, draw: false },
+        { from: liftFrom, to: liftTo, draw: false },
+        { from: liftTo, to: start, draw: false }
+      );
+      current = start;
+    }
+    for (let index = 1; index < stroke.length; index += 1) {
+      const end = worldPoint(stroke[index]);
+      segments.push({ from: current, to: end, draw: true, strokeIndex });
+      current = end;
+    }
+  });
+  return segments;
+}
+
+const motionSegments = buildMotionSegments();
 export type SplashCurve = THREE.CurvePath<THREE.Vector3>;
 
 function line(from: readonly [number, number, number], to: readonly [number, number, number]) {
@@ -51,19 +67,19 @@ export function createShapeCurves(): THREE.LineCurve3[] {
 
 const lengths = motionSegments.map((segment) => line(segment.from, segment.to).getLength());
 const totalLength = lengths.reduce((sum, length) => sum + length, 0);
-const totalDrawLength = motionSegments.reduce(
-  (sum, segment, index) => sum + (segment.draw ? lengths[index] : 0), 0
-);
+const totalDrawLength = motionSegments.reduce((sum, segment, index) => sum + (segment.draw ? lengths[index] : 0), 0);
 
-function fractionAfterSegment(index: number) {
-  return lengths.slice(0, index + 1).reduce((sum, length) => sum + length, 0) / totalLength;
+function fractionAfter(predicate: (segment: MotionSegment) => boolean) {
+  let last = 0;
+  motionSegments.forEach((segment, index) => { if (predicate(segment)) last = index; });
+  return lengths.slice(0, last + 1).reduce((sum, length) => sum + length, 0) / totalLength;
 }
 
 export function getCurveLandmarks() {
   return {
-    entryEnd: fractionAfterSegment(2),
-    yEnd: fractionAfterSegment(8),
-    kStemEnd: fractionAfterSegment(12),
+    entryEnd: lengths.slice(0, 3).reduce((sum, length) => sum + length, 0) / totalLength,
+    yEnd: fractionAfter((segment) => segment.strokeIndex === 2),
+    kStemEnd: fractionAfter((segment) => segment.strokeIndex === 3),
     final: 1,
   };
 }
@@ -73,10 +89,9 @@ export function getTrailFractionAt(u: number) {
   let traversed = 0;
   let drawn = 0;
   for (let index = 0; index < motionSegments.length; index += 1) {
-    const segmentLength = lengths[index];
-    const within = THREE.MathUtils.clamp(distance - traversed, 0, segmentLength);
+    const within = THREE.MathUtils.clamp(distance - traversed, 0, lengths[index]);
     if (motionSegments[index].draw) drawn += within;
-    traversed += segmentLength;
+    traversed += lengths[index];
     if (distance <= traversed) break;
   }
   return drawn / totalDrawLength;

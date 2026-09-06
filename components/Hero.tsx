@@ -2,11 +2,12 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { ArrowRight } from "lucide-react";
-import { profile, BRAND_MARK } from "@/lib/constants/profile";
+import { profile } from "@/lib/constants/profile";
 import { socialLinks } from "@/lib/constants/socialLinks";
 import { useScanReplay } from "@/lib/hooks/useScanReplay";
 import { useIntroDone } from "@/lib/intro-context";
 import { MailtoLink } from "./MailtoLink";
+import { BrandMark } from "./BrandMark";
 
 type FadeUpOptions = {
   /** translateY の開始距離(px) */
@@ -140,7 +141,7 @@ export function Hero() {
               : "header-logo mb-3"
           }
         >
-          {BRAND_MARK}
+          <BrandMark className="h-7 w-7" />
         </div>
 
         {/* 2. 小見出し */}

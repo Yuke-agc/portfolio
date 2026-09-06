@@ -15,11 +15,11 @@ export function BloomEffect({ bloomRef }: BloomEffectProps) {
     <EffectComposer>
       <Bloom
         ref={bloomRef}
-        intensity={0.6}
-        luminanceThreshold={0.15}
-        luminanceSmoothing={0.3}
+        intensity={0.22}
+        luminanceThreshold={0.32}
+        luminanceSmoothing={0.42}
         mipmapBlur
-        radius={0.6}
+        radius={0.48}
       />
     </EffectComposer>
   );

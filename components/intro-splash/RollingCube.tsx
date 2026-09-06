@@ -3,6 +3,7 @@
 import { useEffect, useMemo, type RefObject } from "react";
 import { Edges, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
+import { BRAND_STROKES } from "@/lib/brand-mark";
 import { CUBE_SIZE } from "./curve";
 
 type RollingCubeProps = {
@@ -25,11 +26,20 @@ function createFaceTexture() {
     context.strokeStyle = "rgba(217,165,102,.28)";
     context.lineWidth = 5;
     context.strokeRect(25, 25, 462, 462);
-    context.fillStyle = "#e7b978";
-    context.font = "700 168px monospace";
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillText("YK", 256, 270);
+    context.strokeStyle = "#e7b978";
+    context.lineWidth = 28;
+    context.lineCap = "square";
+    context.lineJoin = "miter";
+    BRAND_STROKES.forEach((stroke) => {
+      context.beginPath();
+      stroke.forEach(([x, y], index) => {
+        const px = 46 + x * 4.2;
+        const py = 46 + y * 4.2;
+        if (index === 0) context.moveTo(px, py);
+        else context.lineTo(px, py);
+      });
+      context.stroke();
+    });
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -50,9 +60,9 @@ export function RollingCube({ meshRef, materialRef }: RollingCubeProps) {
         map={texture}
         color="#ffffff"
         emissive="#7a5227"
-        emissiveIntensity={0.08}
-        roughness={0.22}
-        metalness={0.72}
+        emissiveIntensity={0.05}
+        roughness={0.3}
+        metalness={0.62}
         transparent
         opacity={0}
       />
