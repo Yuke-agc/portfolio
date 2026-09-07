@@ -3,7 +3,7 @@
 import { useEffect, useMemo, type RefObject } from "react";
 import { Edges, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
-import { brandPath } from "@/lib/brand-mark";
+import { brandPath, BRAND_STROKE_WIDTH } from "@/lib/brand-mark";
 import { CUBE_SIZE } from "./curve";
 
 type RollingCubeProps = {
@@ -30,7 +30,7 @@ function createFaceTexture() {
     context.save();
     context.translate(46, 46);
     context.scale(4.2, 4.2);
-    context.lineWidth = 6.5;
+    context.lineWidth = BRAND_STROKE_WIDTH;
     context.lineCap = "round";
     context.lineJoin = "round";
     context.stroke(new Path2D(brandPath()));

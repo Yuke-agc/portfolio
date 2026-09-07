@@ -79,7 +79,7 @@ export function Hero() {
       <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-border/70 py-6">
           <div aria-hidden="true" className={introDone ? "header-logo header-logo--visible" : "header-logo"}>
-            <BrandMark className="h-7 w-7" />
+            <BrandMark className="h-8 w-8" />
           </div>
           <p className={fadeUpClass("text-[10px] uppercase tracking-[0.24em] text-muted sm:text-xs")} style={fadeUpStyle({ distance: 6, duration: 400, delayMs: 80 })}>
             Product Engineer · Japan
@@ -91,7 +91,7 @@ export function Hero() {
             <p className={fadeUpClass("mb-6 text-xs font-medium uppercase tracking-[0.32em] text-accent")} style={fadeUpStyle({ distance: 8, duration: 450, delayMs: 140 })}>
               Portfolio / 01
             </p>
-            <h1 className={`hero-h1-reveal whitespace-pre-line text-balance text-[clamp(2.7rem,5.2vw,5rem)] font-semibold leading-[1.06] tracking-[-0.05em] text-foreground ${introDone ? "hero-h1-reveal--in" : ""}`} style={{ animationDelay: introDone ? "220ms" : undefined }}>
+            <h1 className={`hero-h1-reveal whitespace-pre-line text-balance text-[clamp(2rem,5.2vw,5rem)] font-semibold leading-[1.28] tracking-[-0.035em] text-foreground ${introDone ? "hero-h1-reveal--in" : ""}`} style={{ animationDelay: introDone ? "220ms" : undefined }}>
               <span className="sm:hidden">{profile.heroStatementMobile}</span>
               <span className="hidden sm:inline">{profile.heroStatement}</span>
             </h1>

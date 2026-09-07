@@ -129,6 +129,18 @@ export function useSplashTimeline({
         const dissolveScale = 1 - state.disappear * 0.72;
         cube.scale.setScalar(state.appearIn * depthScale(currentPoint.z) * dissolveScale);
         cube.visible = state.disappear < 0.995;
+        cube.castShadow = state.disappear < 0.05;
+        // Edges has its own material; fade it with the faces to avoid a lingering wireframe.
+        cube.traverse((child) => {
+          if (child === cube) return;
+          const childMaterial = (child as THREE.Mesh).material;
+          if (!childMaterial) return;
+          const materials = Array.isArray(childMaterial) ? childMaterial : [childMaterial];
+          materials.forEach((edgeMaterial) => {
+            edgeMaterial.transparent = true;
+            edgeMaterial.opacity = state.appearIn * (1 - state.disappear);
+          });
+        });
       }
 
       if (material) {
@@ -195,23 +207,11 @@ export function useSplashTimeline({
       { u: landmarks.entryEnd, duration: at(PHASE.driftEnd) - at(PHASE.appearEnd), ease: "power1.in" },
       at(PHASE.appearEnd)
     );
-    // 1.20-2.50s: 大きく移動、軌跡が見え始める（P3→P6付近）
+    // 一筆全体を等速で描く。Kだけが終盤に急加速しないよう距離に応じて配分する。
     tl.to(
       state,
-      { u: landmarks.yEnd, duration: at(PHASE.bigMoveEnd) - at(PHASE.driftEnd), ease: "power2.inOut" },
+      { u: landmarks.final, duration: at(PHASE.centerEnd) - at(PHASE.driftEnd), ease: "none" },
       at(PHASE.driftEnd)
-    );
-    // 2.50-3.80s: 形状が見えてくる（P6→P10付近）
-    tl.to(
-      state,
-      { u: landmarks.kStemEnd, duration: at(PHASE.shapeEnd) - at(PHASE.bigMoveEnd), ease: "power2.inOut" },
-      at(PHASE.bigMoveEnd)
-    );
-    // 3.80-4.50s: 中心へ折れ込み、軌跡完成
-    tl.to(
-      state,
-      { u: landmarks.final, duration: at(PHASE.centerEnd) - at(PHASE.shapeEnd), ease: "power3.out" },
-      at(PHASE.shapeEnd)
     );
 
     // 4.50-5.00s: オーバーシュート → 静止、その瞬間に発光

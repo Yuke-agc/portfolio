@@ -1,7 +1,8 @@
 import { forwardRef, useImperativeHandle, useMemo } from "react";
 import * as THREE from "three";
+import { BRAND_STROKE_WIDTH } from "@/lib/brand-mark";
 
-const TUBULAR_SEGMENTS = 48;
+const TUBULAR_SEGMENTS = 384;
 const RADIAL_SEGMENTS = 8;
 
 export type TrailPathHandle = { setReveal: (fraction: number) => void };
@@ -18,7 +19,7 @@ function tube(curve: THREE.Curve<THREE.Vector3>, radius: number) {
 export const TrailPath = forwardRef<TrailPathHandle, TrailPathProps>(
   function TrailPath({ curves }, ref) {
     const pairs = useMemo<GeometryPair[]>(
-      () => curves.map((curve) => ({ core: tube(curve, 0.026), halo: tube(curve, 0.058), length: curve.getLength() })),
+      () => curves.map((curve) => ({ core: tube(curve, BRAND_STROKE_WIDTH * 0.026 / 2), halo: tube(curve, 0.08), length: curve.getLength() })),
       [curves]
     );
     const totalLength = useMemo(() => pairs.reduce((sum, pair) => sum + pair.length, 0), [pairs]);
@@ -28,7 +29,7 @@ export const TrailPath = forwardRef<TrailPathHandle, TrailPathProps>(
         let remaining = THREE.MathUtils.clamp(fraction, 0, 1) * totalLength;
         pairs.forEach((pair) => {
           const local = THREE.MathUtils.clamp(remaining / pair.length, 0, 1);
-          const count = Math.floor(local * (pair.core.index?.count ?? 0));
+          const count = Math.floor(local * TUBULAR_SEGMENTS) * RADIAL_SEGMENTS * 6;
           pair.core.setDrawRange(0, count);
           pair.halo.setDrawRange(0, count);
           remaining -= pair.length;

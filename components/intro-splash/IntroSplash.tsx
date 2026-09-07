@@ -20,7 +20,7 @@ export type IntroSplashProps = {
  * 内部の演出ロジック（位置・回転・軌跡・カメラ・グロー）はすべて
  * useSplashTimeline 経由の GSAP timeline が ref を直接書き換えて駆動する。
  */
-export function IntroSplash({ duration = 6000, onComplete }: IntroSplashProps) {
+export function IntroSplash({ duration = 4200, onComplete }: IntroSplashProps) {
   const curve = useMemo(() => createSplashCurve(), []);
   const shapeCurves = useMemo(() => createShapeCurves(), []);
 
@@ -33,6 +33,8 @@ export function IntroSplash({ duration = 6000, onComplete }: IntroSplashProps) {
 
   const [ready, setReady] = useState(false);
   const [showTitle, setShowTitle] = useState(false);
+  const [markSize, setMarkSize] = useState(208);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
 
   useSplashTimeline({
     refs: { cubeMeshRef, cubeMaterialRef, cameraRef, lookAtRef, trailRef, bloomRef },
@@ -40,16 +42,25 @@ export function IntroSplash({ duration = 6000, onComplete }: IntroSplashProps) {
     ready,
     duration,
     onComplete,
-    onTitleReveal: () => setShowTitle(true),
+    onTitleReveal: () => {
+      const camera = cameraRef.current;
+      const container = canvasContainerRef.current;
+      if (camera && container) {
+        const left = new THREE.Vector3(-1.3, 0, 0).project(camera);
+        const right = new THREE.Vector3(1.3, 0, 0).project(camera);
+        setMarkSize((right.x - left.x) * container.getBoundingClientRect().width / 2);
+      }
+      setShowTitle(true);
+    },
   });
 
   return (
     <div
-      className={`intro-splash fixed inset-0 z-[200] h-dvh w-screen transition-colors duration-700 ${showTitle ? "bg-transparent" : "bg-[#080809]"}`}
+      className={`intro-splash fixed inset-0 z-[200] h-dvh w-screen transition-colors duration-500 ${showTitle ? "bg-transparent" : "bg-[#080809]"}`}
       role="dialog"
       aria-label="YKイントロアニメーション"
     >
-      <div className={`absolute inset-0 transition-opacity duration-500 ${showTitle ? "opacity-0" : "opacity-100"}`}>
+      <div ref={canvasContainerRef} aria-hidden="true" className={`absolute inset-0 transition-opacity duration-150 ${showTitle ? "opacity-0" : "opacity-100"}`}>
         <SplashCanvas
           shapeCurves={shapeCurves}
           cubeMeshRef={cubeMeshRef}
@@ -61,13 +72,13 @@ export function IntroSplash({ duration = 6000, onComplete }: IntroSplashProps) {
           onReady={() => setReady(true)}
         />
       </div>
-      <TitleText visible={showTitle} />
+      {showTitle && <TitleText sourceSize={markSize} />}
       <button
         type="button"
         onClick={onComplete}
-        className="absolute right-5 top-5 min-h-11 rounded-full border border-white/15 px-4 text-[11px] font-medium uppercase tracking-[0.18em] text-white/55 transition hover:border-white/30 hover:text-white sm:right-8 sm:top-8"
+        className="absolute right-5 top-5 min-h-11 rounded-full border border-white/25 bg-black/20 px-4 text-xs font-medium tracking-[0.08em] text-white/80 transition hover:border-white/50 hover:text-white sm:right-8 sm:top-8"
       >
-        Skip
+        スキップ
       </button>
     </div>
   );

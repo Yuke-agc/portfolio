@@ -375,6 +375,11 @@ html {
   scrollbar-gutter: stable;
 }
 
+:where(a, button):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+}
+
 body {
   color: var(--foreground);
   /* 極めて淡い光だまりを2つ重ねて、単色よりわずかに奥行きを持たせる */

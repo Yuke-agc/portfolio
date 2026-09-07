@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { brandPath } from "@/lib/brand-mark";
+import { brandPath, BRAND_STROKE_WIDTH } from "@/lib/brand-mark";
 
 type BrandMarkProps = {
   className?: string;
@@ -21,7 +21,7 @@ export function BrandMark({ className, style, title }: BrandMarkProps) {
         d={brandPath()}
         fill="none"
         stroke="currentColor"
-        strokeWidth="6.5"
+        strokeWidth={BRAND_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
       />

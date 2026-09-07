@@ -9,7 +9,8 @@ export function WorkList() {
         <div className="mb-12 grid gap-5 border-b border-border pb-8 md:grid-cols-[1fr_1.4fr] md:items-end">
           <p className="text-xs font-medium uppercase tracking-[0.3em] text-accent">Selected work / 01</p>
           <h2 className="text-balance text-3xl font-semibold leading-tight tracking-[-0.035em] text-foreground sm:text-4xl lg:text-5xl">
-            言葉だけが残る場所を設計する。
+            <span className="inline-block">言葉だけが残る</span>
+            <span className="inline-block">場所を設計する。</span>
           </h2>
         </div>
       </FadeIn>

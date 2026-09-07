@@ -1,4 +1,5 @@
 export type BrandPoint = readonly [number, number];
+export const BRAND_STROKE_WIDTH = 4.5;
 
 export type BrandCurve = {
   from: BrandPoint;
@@ -9,15 +10,15 @@ export type BrandCurve = {
 
 /** YからKまでペンを離さずに描く、共通の筆記体ベジェ曲線。 */
 export const BRAND_CURVES: readonly BrandCurve[] = [
-  { from: [7, 17], control1: [14, 25], control2: [24, 40], to: [31, 48] },
-  { from: [31, 48], control1: [39, 38], control2: [46, 24], to: [53, 14] },
-  { from: [53, 14], control1: [45, 38], control2: [34, 68], to: [27, 86] },
-  { from: [27, 86], control1: [38, 81], control2: [50, 84], to: [61, 86] },
-  { from: [61, 86], control1: [59, 64], control2: [60, 35], to: [61, 14] },
-  { from: [61, 14], control1: [62, 31], control2: [62, 44], to: [61, 52] },
-  { from: [61, 52], control1: [72, 39], control2: [82, 25], to: [92, 14] },
-  { from: [92, 14], control1: [82, 30], control2: [71, 44], to: [61, 52] },
-  { from: [61, 52], control1: [72, 62], control2: [84, 76], to: [95, 86] },
+  { from: [8, 20], control1: [15, 44], control2: [24, 57], to: [34, 44] },
+  { from: [34, 44], control1: [42, 34], control2: [48, 23], to: [53, 14] },
+  { from: [53, 14], control1: [45, 40], control2: [35, 73], to: [22, 85] },
+  { from: [22, 85], control1: [3, 99], control2: [8, 52], to: [58, 65] },
+  { from: [58, 65], control1: [65, 48], control2: [68, 27], to: [72, 14] },
+  { from: [72, 14], control1: [70, 36], control2: [62, 66], to: [58, 84] },
+  { from: [58, 84], control1: [62, 56], control2: [80, 29], to: [93, 20] },
+  { from: [93, 20], control1: [101, 15], control2: [92, 44], to: [65, 53] },
+  { from: [65, 53], control1: [71, 65], control2: [82, 83], to: [95, 83] },
 ] as const;
 
 export function brandPath() {
